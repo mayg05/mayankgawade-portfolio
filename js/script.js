@@ -230,6 +230,24 @@ animatedSections.forEach(section => {
 });
 
 // ========================================
+// EmailJS Configuration
+// ========================================
+// IMPORTANT: Replace these values with your EmailJS credentials
+// Get them from: https://dashboard.emailjs.com/admin
+const EMAILJS_CONFIG = {
+    PUBLIC_KEY: 'avqX9drj0NM2itzOC',        // Replace with your EmailJS Public Key
+    SERVICE_ID: 'service_ugbg0ff',        // Replace with your EmailJS Service ID
+    TEMPLATE_ID: 'template_4qt60lj'       // Replace with your EmailJS Template ID
+};
+
+// Initialize EmailJS
+(function() {
+    if (typeof emailjs !== 'undefined') {
+        emailjs.init(EMAILJS_CONFIG.PUBLIC_KEY);
+    }
+})();
+
+// ========================================
 // Contact Form Validation & Handling
 // ========================================
 const contactForm = document.getElementById('contactForm');
@@ -257,16 +275,59 @@ if (contactForm && formMessage) {
             return;
         }
 
-        // Show success message (no backend, so just display message)
-        showFormMessage('Thank you for your message! I will get back to you soon.', 'success');
-        
-        // Reset form
-        contactForm.reset();
-        
-        // Clear message after 5 seconds
-        setTimeout(() => {
-            formMessage.classList.remove('show');
-        }, 5000);
+        // Check if EmailJS is configured
+        if (EMAILJS_CONFIG.PUBLIC_KEY === 'YOUR_PUBLIC_KEY' || 
+            EMAILJS_CONFIG.SERVICE_ID === 'YOUR_SERVICE_ID' || 
+            EMAILJS_CONFIG.TEMPLATE_ID === 'YOUR_TEMPLATE_ID') {
+            // Fallback: Open email client with mailto link
+            const subject = encodeURIComponent('Portfolio Contact from ' + name);
+            const body = encodeURIComponent('Name: ' + name + '\n\nEmail: ' + email + '\n\nMessage:\n' + message);
+            window.location.href = `mailto:mayankgawade211@gmail.com?subject=${subject}&body=${body}`;
+            showFormMessage('Opening your email client... If it doesn\'t open, please email me directly.', 'success');
+            contactForm.reset();
+            return;
+        }
+
+        // Show loading state
+        const submitButton = contactForm.querySelector('button[type="submit"]');
+        const originalButtonText = submitButton.textContent;
+        submitButton.disabled = true;
+        submitButton.textContent = 'Sending...';
+
+        // Send email using EmailJS
+        if (typeof emailjs !== 'undefined') {
+            emailjs.send(
+                EMAILJS_CONFIG.SERVICE_ID,
+                EMAILJS_CONFIG.TEMPLATE_ID,
+                {
+                    from_name: name,
+                    from_email: email,
+                    message: message,
+                    to_email: 'mayankgawade211@gmail.com'
+                }
+            )
+            .then(() => {
+                showFormMessage('Thank you for your message! I will get back to you soon.', 'success');
+                contactForm.reset();
+                submitButton.disabled = false;
+                submitButton.textContent = originalButtonText;
+                
+                // Clear message after 5 seconds
+                setTimeout(() => {
+                    formMessage.classList.remove('show');
+                }, 5000);
+            })
+            .catch((error) => {
+                console.error('EmailJS Error:', error);
+                showFormMessage('Sorry, there was an error sending your message. Please try emailing me directly.', 'error');
+                submitButton.disabled = false;
+                submitButton.textContent = originalButtonText;
+            });
+        } else {
+            showFormMessage('Email service not available. Please email me directly.', 'error');
+            submitButton.disabled = false;
+            submitButton.textContent = originalButtonText;
+        }
     });
 }
 
