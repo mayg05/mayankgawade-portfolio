@@ -648,6 +648,11 @@ body {
     text-decoration: underline;
 }
 
+.gmail-btn {
+    width: fit-content;
+    margin-top: 0.5rem;
+}
+
 .social-links {
     display: flex;
     gap: 1.5rem;
@@ -908,4 +913,10 @@ body {
     .experience-item {
         padding: 1.5rem;
     }
+}
+
+.ephesis-regular {
+  font-family: "Ephesis", cursive;
+  font-weight: 400;
+  font-style: normal;
 }
